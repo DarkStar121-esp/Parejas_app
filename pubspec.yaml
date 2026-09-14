@@ -1,5 +1,5 @@
 name: parejas_app
-description: "App de Parejas con juegos en tiempo real"
+description: "App de Parejas con juegos en tiempo real e invitaciones"
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -14,6 +14,7 @@ dependencies:
   cloud_firestore: ^5.0.0
   firebase_auth: ^5.0.0
   google_sign_in: ^6.2.1
+  shared_preferences: ^2.2.2
 
 dev_dependencies:
   flutter_test:
