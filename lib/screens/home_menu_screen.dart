@@ -1,17 +1,56 @@
 import 'package:flutter/material.dart';
+import '../models/user_account.dart';
+import '../models/progression_model.dart';
+import '../models/match_history_model.dart';
+import 'profile_screen.dart';
 
 class HomeMenuScreen extends StatelessWidget {
   const HomeMenuScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // Datos de ejemplo para pruebas en UI
+    final dummyUser = UserAccount(
+      uid: 'u1',
+      firstName: 'Santiago',
+      lastName: 'Villarruel',
+      age: 24,
+      gender: Gender.male,
+      pairingCode: 'ABC123',
+      equippedBanner: 'azul',
+    );
+
+    final dummyPartner = UserAccount(
+      uid: 'u2',
+      firstName: 'Pareja',
+      lastName: 'Ejemplo',
+      age: 23,
+      gender: Gender.female,
+      pairingCode: 'XYZ789',
+    );
+
+    final dummyProgression = ProgressionModel(level: 3, currentXp: 140, streakDays: 5);
+    final dummyMatchHistory = MatchHistoryModel(user1Wins: 8, user2Wins: 3);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Parejas App - Menú Principal'),
+        title: const Text('Parejas App - Juegos'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.star, color: Colors.amber),
-            onPressed: () {},
+            icon: const Icon(Icons.person, color: Colors.pink),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ProfileScreen(
+                    user: dummyUser,
+                    partner: dummyPartner,
+                    progression: dummyProgression,
+                    matchHistory: dummyMatchHistory,
+                  ),
+                ),
+              );
+            },
           )
         ],
       ),
@@ -20,22 +59,40 @@ class HomeMenuScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Card(
-              color: Colors.pink.shade100,
-              child: const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Row(
-                  children: [
-                    CircleAvatar(child: Icon(Icons.favorite, color: Colors.red)),
-                    SizedBox(width: 16),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Nivel de Pareja: 1', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                        Text('Racha: 1 día 🔥'),
-                      ],
+            InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProfileScreen(
+                      user: dummyUser,
+                      partner: dummyPartner,
+                      progression: dummyProgression,
+                      matchHistory: dummyMatchHistory,
                     ),
-                  ],
+                  ),
+                );
+              },
+              child: Card(
+                color: Colors.pink.shade50,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    children: [
+                      const CircleAvatar(
+                        backgroundColor: Colors.pink,
+                        child: Icon(Icons.favorite, color: Colors.white),
+                      ),
+                      const SizedBox(width: 16),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Nivel de Pareja: ${dummyProgression.level}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                          Text('Racha: ${dummyProgression.streakDays} días 🔥 | Toca para ver Perfil'),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
