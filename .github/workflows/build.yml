@@ -25,14 +25,11 @@ jobs:
       - name: Rebuild Android Project Cleanly
         run: |
           rm -rf android .flutter-plugins .flutter-plugins-dependencies .dart_tool build
-          flutter create --platforms=android .
+          flutter create --org com.example --platforms=android .
           flutter pub get
 
-      - name: Build APK
-        run: flutter build apk --debug
+      - name: Analyze Dart Code
+        run: flutter analyze || true
 
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-debug
-          path: build/app/outputs/flutter-apk/app-debug.apk
+      - name: Build APK
+        run: flutter build apk --debug --target=lib/main.dart
