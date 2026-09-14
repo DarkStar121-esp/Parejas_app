@@ -21,19 +21,11 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Clean local cache and recreate platform
+      - name: Clean local generated files
         run: |
-          rm -f .flutter-plugins .flutter-plugins-dependencies
-          rm -rf .dart_tool
+          rm -rf .flutter-plugins .flutter-plugins-dependencies .dart_tool build
           flutter clean
-          flutter create --platforms=android .
           flutter pub get
 
       - name: Build APK
         run: flutter build apk --debug
-
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-debug
-          path: build/app/outputs/flutter-apk/app-debug.apk
