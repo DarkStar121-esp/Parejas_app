@@ -40,7 +40,6 @@ class ProfileScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('Perfil de Pareja')),
       body: ListView(
         children: [
-          // Banner Personalizado de Perfil (Sección 5.2)
           Container(
             height: 140,
             decoration: BoxDecoration(
@@ -70,7 +69,6 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 40),
 
-          // Nombre y Apodo Competitivo (DOMINANTE / DOMINADO)
           Center(
             child: Column(
               children: [
@@ -94,7 +92,6 @@ class ProfileScreen extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          // Tarjeta de Progresión y Racha (Sección 4)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Card(
@@ -129,7 +126,6 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
 
-          // Estadísticas de Competencias 1v1 (Sección 7)
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Card(
@@ -139,7 +135,7 @@ class ProfileScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Estadísticas Competitivas', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    const Text('Estadísticas Competitivas', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 12),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,

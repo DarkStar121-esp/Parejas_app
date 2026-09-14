@@ -60,6 +60,11 @@ class _MainNavigationHubState extends State<MainNavigationHub> {
         return CoupleSetupScreen(
           user1Id: _currentUser?.uid ?? '1',
           user2Id: 'partner_id',
+          onSetupComplete: () {
+            setState(() {
+              _currentStep = AppStep.home;
+            });
+          },
         );
 
       case AppStep.home:

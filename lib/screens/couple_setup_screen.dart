@@ -4,11 +4,13 @@ import '../models/couple_model.dart';
 class CoupleSetupScreen extends StatefulWidget {
   final String user1Id;
   final String user2Id;
+  final VoidCallback onSetupComplete;
 
   const CoupleSetupScreen({
     super.key,
     required this.user1Id,
     required this.user2Id,
+    required this.onSetupComplete,
   });
 
   @override
@@ -44,6 +46,9 @@ class _CoupleSetupScreenState extends State<CoupleSetupScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('¡Pareja creada! Llevan: ${couple.timeTogetherFormatted}')),
     );
+
+    // Avanza al menú principal de juegos
+    widget.onSetupComplete();
   }
 
   @override
@@ -95,7 +100,7 @@ class _CoupleSetupScreenState extends State<CoupleSetupScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: _createCouple,
-                child: const Text('Guardar y Continuar'),
+                child: const Text('Guardar y Entrar a los Juegos'),
               ),
             ),
           ],
