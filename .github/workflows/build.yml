@@ -22,12 +22,17 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Clean build & local files
+      - name: Rebuild Android Project Cleanly
         run: |
-          rm -f .flutter-plugins .flutter-plugins-dependencies .packages
-          rm -rf .dart_tool build
-          flutter clean
+          rm -rf android .flutter-plugins .flutter-plugins-dependencies .dart_tool build
+          flutter create --platforms=android .
           flutter pub get
 
-      - name: Build APK Verbose
-        run: flutter build apk --debug -v
+      - name: Build APK
+        run: flutter build apk --debug
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: build/app/outputs/flutter-apk/app-debug.apk
