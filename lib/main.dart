@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'models/user_account.dart';
+import 'models/progression_model.dart';
+import 'models/match_history_model.dart';
 import 'screens/register_screen.dart';
 import 'screens/pairing_screen.dart';
 import 'screens/couple_setup_screen.dart';
@@ -37,9 +39,40 @@ enum AppStep { register, pairing, coupleSetup, home }
 class _MainNavigationHubState extends State<MainNavigationHub> {
   AppStep _currentStep = AppStep.register;
   UserAccount? _currentUser;
+  UserAccount? _partnerUser;
+
+  // Estadísticas inicializadas estrictamente EN CERO
+  final ProgressionModel _progression = ProgressionModel(level: 1, currentXp: 0, streakDays: 0);
+  final MatchHistoryModel _matchHistory = MatchHistoryModel(user1Wins: 0, user2Wins: 0);
+
+  bool get _isPairedSuccessfully => _currentUser != null && _partnerUser != null;
+
+  void _onBackPressed() {
+    setState(() {
+      if (_currentStep == AppStep.home) {
+        _currentStep = AppStep.coupleSetup;
+      } else if (_currentStep == AppStep.coupleSetup) {
+        _currentStep = AppStep.pairing;
+      } else if (_currentStep == AppStep.pairing) {
+        _currentStep = AppStep.register;
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    return PopScope(
+      canPop: _currentStep == AppStep.register,
+      onPopInvoked: (didPop) {
+        if (!didPop && _currentStep != AppStep.register) {
+          _onBackPressed();
+        }
+      },
+      child: _buildCurrentScreen(),
+    );
+  }
+
+  Widget _buildCurrentScreen() {
     switch (_currentStep) {
       case AppStep.register:
         return RegisterScreen(
@@ -54,17 +87,25 @@ class _MainNavigationHubState extends State<MainNavigationHub> {
       case AppStep.pairing:
         return PairingScreen(
           currentUser: _currentUser!,
-          onPairingComplete: () {
+          onPairingCompleteWithPartner: (partner) {
             setState(() {
+              _partnerUser = partner;
               _currentStep = AppStep.coupleSetup;
             });
           },
         );
 
       case AppStep.coupleSetup:
+        if (!_isPairedSuccessfully) {
+          return Scaffold(
+            body: Center(
+              child: Text('Debes vincular tu cuenta con la de tu pareja para continuar.'),
+            ),
+          );
+        }
         return CoupleSetupScreen(
-          user1Id: _currentUser?.uid ?? '1',
-          user2Id: 'partner_id',
+          user1Id: _currentUser!.uid,
+          user2Id: _partnerUser!.uid,
           onSetupComplete: () {
             setState(() {
               _currentStep = AppStep.home;
@@ -73,7 +114,19 @@ class _MainNavigationHubState extends State<MainNavigationHub> {
         );
 
       case AppStep.home:
-        return const HomeMenuScreen();
+        if (!_isPairedSuccessfully) {
+          return const Scaffold(
+            body: Center(
+              child: Text('Acceso denegado: No existe una vinculación activa de pareja.'),
+            ),
+          );
+        }
+        return HomeMenuScreen(
+          user: _currentUser!,
+          partner: _partnerUser!,
+          progression: _progression,
+          matchHistory: _matchHistory,
+        );
     }
   }
 }

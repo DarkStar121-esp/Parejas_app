@@ -5,12 +5,12 @@ import 'pairing_dialog.dart';
 
 class PairingScreen extends StatefulWidget {
   final UserAccount currentUser;
-  final VoidCallback onPairingComplete;
+  final Function(UserAccount partner) onPairingCompleteWithPartner;
 
   const PairingScreen({
     super.key,
     required this.currentUser,
-    required this.onPairingComplete,
+    required this.onPairingCompleteWithPartner,
   });
 
   @override
@@ -20,33 +20,19 @@ class PairingScreen extends StatefulWidget {
 class _PairingScreenState extends State<PairingScreen> {
   final _codeController = TextEditingController();
   bool _isSearching = false;
-  UserAccount? _discoveredWifiUser;
-
-  @override
-  void initState() {
-    super.initState();
-    _listenWifiPeers();
-  }
-
-  void _listenWifiPeers() {
-    PairingService.discoverLocalWifiPeers().listen((user) {
-      if (mounted) {
-        setState(() => _discoveredWifiUser = user);
-      }
-    });
-  }
 
   void _searchAndPair(String code) async {
-    if (code.isEmpty) return;
+    if (code.trim().isEmpty) return;
     setState(() => _isSearching = true);
-    final partner = await PairingService.findUserByCode(code);
+    
+    final partner = await PairingService.findUserByCode(code.trim());
     setState(() => _isSearching = false);
 
     if (partner != null && mounted) {
       _showConfirmationDialog(partner);
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Código no encontrado o invalido.')),
+        const SnackBar(content: Text('No se encontró el código de tu pareja o las cuentas no coinciden.')),
       );
     }
   }
@@ -61,7 +47,7 @@ class _PairingScreenState extends State<PairingScreen> {
         onCancel: () => Navigator.pop(ctx),
         onConfirm: () {
           Navigator.pop(ctx);
-          widget.onPairingComplete(); // AVANZA AL PASO DE CONFIGURACION DE PAREJA
+          widget.onPairingCompleteWithPartner(partner);
         },
       ),
     );
@@ -70,26 +56,23 @@ class _PairingScreenState extends State<PairingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Conectar con tu Pareja')),
+      appBar: AppBar(title: const Text('Conectar Cuentas de Pareja')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
             Card(
+              elevation: 2,
               child: ListTile(
                 title: const Text('Tu Código de Emparejamiento'),
                 subtitle: Text(
                   widget.currentUser.pairingCode,
                   style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, letterSpacing: 2),
                 ),
-                trailing: IconButton(
-                  icon: const Icon(Icons.copy),
-                  onPressed: () {},
-                ),
               ),
             ),
             const SizedBox(height: 24),
-            const Text('1. Ingresar código de tu pareja:'),
+            const Text('Ingresá el código del celular de tu pareja:', style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             Row(
               children: [
@@ -104,38 +87,13 @@ class _PairingScreenState extends State<PairingScreen> {
                 ),
                 const SizedBox(width: 8),
                 ElevatedButton(
-                  onPressed: _isSearching ? null : () => _searchAndPair(_codeController.text.trim()),
-                  child: _isSearching ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Conectar'),
+                  onPressed: _isSearching ? null : () => _searchAndPair(_codeController.text),
+                  child: _isSearching 
+                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) 
+                      : const Text('Vincular'),
                 ),
               ],
             ),
-            const SizedBox(height: 32),
-            const Text('2. Mismo WiFi (Descubrimiento automático):'),
-            const SizedBox(height: 8),
-            if (_discoveredWifiUser != null)
-              Card(
-                color: Colors.pink.shade50,
-                child: ListTile(
-                  leading: const Icon(Icons.wifi, color: Colors.pink),
-                  title: Text('¿Te querés conectar con ${_discoveredWifiUser!.firstName}?'),
-                  subtitle: const Text('Detectado en la misma red WiFi'),
-                  trailing: ElevatedButton(
-                    onPressed: () => _showConfirmationDialog(_discoveredWifiUser!),
-                    child: const Text('Conectar'),
-                  ),
-                ),
-              )
-            else
-              const Padding(
-                padding: EdgeInsets.all(12.0),
-                child: Row(
-                  children: [
-                    SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
-                    SizedBox(width: 12),
-                    Text('Buscando dispositivos en la misma red...'),
-                  ],
-                ),
-              ),
           ],
         ),
       ),

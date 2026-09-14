@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "860001616686-b01dgog079esiveuc1d3ab8mvdgd2h8c.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.parejas_app",
+            "certificate_hash": "18b2735a690a75278b5678731334761ac3da8b25"
+          }
+        },
+        {
           "client_id": "860001616686-1hbq5a787kid8igqeqb117mbmgv10k1h.apps.googleusercontent.com",
           "client_type": 3
         }

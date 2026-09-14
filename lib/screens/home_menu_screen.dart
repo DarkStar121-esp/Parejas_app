@@ -5,36 +5,24 @@ import '../models/match_history_model.dart';
 import 'profile_screen.dart';
 
 class HomeMenuScreen extends StatelessWidget {
-  const HomeMenuScreen({super.key});
+  final UserAccount user;
+  final UserAccount partner;
+  final ProgressionModel progression;
+  final MatchHistoryModel matchHistory;
+
+  const HomeMenuScreen({
+    super.key,
+    required this.user,
+    required this.partner,
+    required this.progression,
+    required this.matchHistory,
+  });
 
   @override
   Widget build(BuildContext context) {
-    // Datos de ejemplo para pruebas en UI
-    final dummyUser = UserAccount(
-      uid: 'u1',
-      firstName: 'Santiago',
-      lastName: 'Villarruel',
-      age: 24,
-      gender: Gender.male,
-      pairingCode: 'ABC123',
-      equippedBanner: 'azul',
-    );
-
-    final dummyPartner = UserAccount(
-      uid: 'u2',
-      firstName: 'Pareja',
-      lastName: 'Ejemplo',
-      age: 23,
-      gender: Gender.female,
-      pairingCode: 'XYZ789',
-    );
-
-    final dummyProgression = ProgressionModel(level: 3, currentXp: 140, streakDays: 5);
-    final dummyMatchHistory = MatchHistoryModel(user1Wins: 8, user2Wins: 3);
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Parejas App - Juegos'),
+        title: const Text('Parejas App - Menú de Juegos'),
         actions: [
           IconButton(
             icon: const Icon(Icons.person, color: Colors.pink),
@@ -43,10 +31,10 @@ class HomeMenuScreen extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (context) => ProfileScreen(
-                    user: dummyUser,
-                    partner: dummyPartner,
-                    progression: dummyProgression,
-                    matchHistory: dummyMatchHistory,
+                    user: user,
+                    partner: partner,
+                    progression: progression,
+                    matchHistory: matchHistory,
                   ),
                 ),
               );
@@ -65,10 +53,10 @@ class HomeMenuScreen extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (context) => ProfileScreen(
-                      user: dummyUser,
-                      partner: dummyPartner,
-                      progression: dummyProgression,
-                      matchHistory: dummyMatchHistory,
+                      user: user,
+                      partner: partner,
+                      progression: progression,
+                      matchHistory: matchHistory,
                     ),
                   ),
                 );
@@ -87,8 +75,8 @@ class HomeMenuScreen extends StatelessWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Nivel de Pareja: ${dummyProgression.level}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                          Text('Racha: ${dummyProgression.streakDays} días 🔥 | Toca para ver Perfil'),
+                          Text('Nivel de Pareja: ${progression.level}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                          Text('Racha: ${progression.streakDays} días 🔥 | Ver Perfil'),
                         ],
                       ),
                     ],
@@ -105,10 +93,10 @@ class HomeMenuScreen extends StatelessWidget {
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
                 children: [
+                  _buildGameCard(context, 'UNO Parejas', Icons.style, Colors.red),
+                  _buildGameCard(context, 'En Palabras', Icons.font_download, Colors.blue),
                   _buildGameCard(context, 'Verdad o Reto', Icons.psychology, Colors.purple),
-                  _buildGameCard(context, '¿Quién es más...?', Icons.people, Colors.orange),
-                  _buildGameCard(context, 'Preguntados Pareja', Icons.quiz, Colors.blue),
-                  _buildGameCard(context, 'Desafío 1v1', Icons.sports_esports, Colors.red),
+                  _buildGameCard(context, 'Desafío 1v1', Icons.sports_esports, Colors.orange),
                 ],
               ),
             ),
@@ -124,7 +112,7 @@ class HomeMenuScreen extends StatelessWidget {
       child: InkWell(
         onTap: () {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Iniciando $title...')),
+            SnackBar(content: Text('Abriendo $title...')),
           );
         },
         child: Column(
