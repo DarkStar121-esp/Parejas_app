@@ -4,43 +4,43 @@ import * as admin from "firebase-admin";
 admin.initializeApp();
 const db = admin.firestore();
 
+// 6. Cloud Scheduler: Ejecución diaria a las 00:00 UTC para XP pasiva (+5 XP)
 export const dailyProgressionTick = functions.pubsub
-  .schedule("every 24 hours")
+  .schedule("0 0 * * *")
+  .timeZone("UTC")
   .onRun(async (context) => {
-    const couplesSnapshot = await db.collection("couples").get();
+    const couplesRef = db.collection("couples");
+    const snapshot = await couplesRef.get();
+
+    if (snapshot.empty) {
+      console.log("No hay parejas registradas.");
+      return null;
+    }
+
     const batch = db.batch();
 
-    const now = new Date();
+    snapshot.docs.forEach((doc) => {
+      const data = doc.data();
+      let currentXp = data.progression?.currentXp || 0;
+      let level = data.progression?.level || 1;
 
-    couplesSnapshot.forEach((doc) => {
-      const couple = doc.data();
-      const lastActive = couple.lastActiveDate
-        ? new Date(couple.lastActiveDate)
-        : new Date(0);
-      const diffHours = (now.getTime() - lastActive.getTime()) / (1000 * 3600);
+      // Sumar 5 XP pasiva por día
+      currentXp += 5;
 
-      let streak = couple.streakDays || 0;
-      if (diffHours > 48) {
-        streak = 0; // Se reinicia si pasaron más de 48 hs sin jugar
-      }
-
-      let xp = (couple.xp || 0) + 5; // +5 XP Pasiva
-      let level = couple.level || 1;
-      let reqXp = 100 * level;
-
-      while (xp >= reqXp) {
-        xp -= reqXp;
-        level++;
-        reqXp = 100 * level;
+      // Evaluar subida de nivel (curva: 100 * level)
+      while (currentXp >= 100 * level) {
+        currentXp -= 100 * level;
+        level += 1;
       }
 
       batch.update(doc.ref, {
-        xp: xp,
-        level: level,
-        streakDays: streak,
+        "progression.currentXp": currentXp,
+        "progression.level": level,
+        "progression.lastPassiveTick": admin.firestore.FieldValue.serverTimestamp(),
       });
     });
 
     await batch.commit();
-    console.log("Progreso diario actualizado para todas las parejas.");
+    console.log(`XP pasiva diaria procesada para ${snapshot.size} parejas.`);
+    return null;
   });
