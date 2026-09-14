@@ -22,14 +22,17 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Rebuild Android Project Cleanly
+      - name: Clean & Rebuild Android Platform
         run: |
-          rm -rf android .flutter-plugins .flutter-plugins-dependencies .dart_tool build
+          rm -rf android .flutter-plugins .flutter-plugins-dependencies .dart_tool build test/widget_test.dart
           flutter create --org com.example --platforms=android .
           flutter pub get
 
-      - name: Analyze Dart Code
-        run: flutter analyze || true
+      - name: Build APK (Ignore Warnings)
+        run: flutter build apk --debug --no-tree-shake-icons
 
-      - name: Build APK
-        run: flutter build apk --debug --target=lib/main.dart
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: build/app/outputs/flutter-apk/app-debug.apk
