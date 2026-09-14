@@ -35,14 +35,12 @@ class _HomeMenuScreenState extends State<HomeMenuScreen> {
     _savePairingLocally();
   }
 
-  // Guardar la vinculacion para recordar la conexion al volver a abrir la app
   Future<void> _savePairingLocally() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('partnerId', widget.partner.uid);
     await prefs.setString('partnerName', widget.partner.displayName);
   }
 
-  // Enviar invitacion de juego al otro dispositivo
   Future<void> _sendGameInvite(String gameTitle) async {
     final inviteId = '${widget.user.uid}_${widget.partner.uid}';
     await _firestore.collection('game_invitations').doc(inviteId).set({
@@ -51,7 +49,6 @@ class _HomeMenuScreenState extends State<HomeMenuScreen> {
       'senderName': widget.user.displayName,
       'gameTitle': gameTitle,
       'status': 'pending',
-      'timestamp': FieldValue.serverTimestamp(),
     });
 
     if (mounted) {
@@ -77,7 +74,8 @@ class _HomeMenuScreenState extends State<HomeMenuScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final inviteId = '${widget.partner.uid}_${widget.user.uid}';
+    final incomingInviteId = '${widget.partner.uid}_${widget.user.uid}';
+    final myInviteId = '${widget.user.uid}_${widget.partner.uid}';
 
     return Scaffold(
       appBar: AppBar(
@@ -108,40 +106,25 @@ class _HomeMenuScreenState extends State<HomeMenuScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ProfileScreen(
-                          user: widget.user,
-                          partner: widget.partner,
-                          progression: widget.progression,
-                          matchHistory: widget.matchHistory,
+                Card(
+                  color: Colors.pink.shade50,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      children: [
+                        const CircleAvatar(
+                          backgroundColor: Colors.pink,
+                          child: Icon(Icons.favorite, color: Colors.white),
                         ),
-                      ),
-                    );
-                  },
-                  child: Card(
-                    color: Colors.pink.shade50,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Row(
-                        children: [
-                          const CircleAvatar(
-                            backgroundColor: Colors.pink,
-                            child: Icon(Icons.favorite, color: Colors.white),
-                          ),
-                          const SizedBox(width: 16),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Nivel de Pareja: ${widget.progression.level}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                              Text('Conectado con: ${widget.partner.displayName} 💕'),
-                            ],
-                          ),
-                        ],
-                      ),
+                        const SizedBox(width: 16),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Nivel: ${widget.progression.level}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                            Text('Conectado con: ${widget.partner.displayName} 💕'),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -167,9 +150,9 @@ class _HomeMenuScreenState extends State<HomeMenuScreen> {
             ),
           ),
 
-          // Escuchar invitaciones entrantes enviadas por la pareja
+          // Escuchar invitaciones entrantes de la pareja
           StreamBuilder<DocumentSnapshot>(
-            stream: _firestore.collection('game_invitations').doc(inviteId).snapshots(),
+            stream: _firestore.collection('game_invitations').doc(incomingInviteId).snapshots(),
             builder: (context, snapshot) {
               if (snapshot.hasData && snapshot.data!.exists) {
                 final data = snapshot.data!.data() as Map<String, dynamic>?;
@@ -189,26 +172,20 @@ class _HomeMenuScreenState extends State<HomeMenuScreen> {
                             children: [
                               const Icon(Icons.sports_esports, size: 48, color: Colors.pink),
                               const SizedBox(height: 12),
-                              Text(
-                                '¡$senderName te invita a jugar!',
-                                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 8),
-                              Text('Juego: $gameTitle', style: const TextStyle(fontSize: 16)),
+                              Text('¡$senderName te invita a jugar $gameTitle!', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
                               const SizedBox(height: 20),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                 children: [
                                   OutlinedButton(
                                     onPressed: () async {
-                                      await _firestore.collection('game_invitations').doc(inviteId).update({'status': 'rejected'});
+                                      await _firestore.collection('game_invitations').doc(incomingInviteId).update({'status': 'rejected'});
                                     },
                                     child: const Text('Rechazar'),
                                   ),
                                   ElevatedButton(
                                     onPressed: () async {
-                                      await _firestore.collection('game_invitations').doc(inviteId).update({'status': 'accepted'});
+                                      await _firestore.collection('game_invitations').doc(incomingInviteId).update({'status': 'accepted'});
                                       if (context.mounted) {
                                         _navigateToGame(gameTitle);
                                       }
@@ -225,21 +202,20 @@ class _HomeMenuScreenState extends State<HomeMenuScreen> {
                   );
                 }
               }
-
               return const SizedBox.shrink();
             },
           ),
 
-          // Escuchar cuando la pareja acepta nuestra invitacion para entrar al juego juntos
+          // Escuchar si aceptaron nuestra invitacion
           StreamBuilder<DocumentSnapshot>(
-            stream: _firestore.collection('game_invitations').doc('${widget.user.uid}_${widget.partner.uid}').snapshots(),
+            stream: _firestore.collection('game_invitations').doc(myInviteId).snapshots(),
             builder: (context, snapshot) {
               if (snapshot.hasData && snapshot.data!.exists) {
                 final data = snapshot.data!.data() as Map<String, dynamic>?;
                 if (data != null && data['status'] == 'accepted') {
                   final String gameTitle = data['gameTitle'] ?? 'Juego';
                   WidgetsBinding.instance.addPostFrameCallback((_) {
-                    _firestore.collection('game_invitations').doc('${widget.user.uid}_${widget.partner.uid}').update({'status': 'in_game'});
+                    _firestore.collection('game_invitations').doc(myInviteId).update({'status': 'in_game'});
                     _navigateToGame(gameTitle);
                   });
                 }
