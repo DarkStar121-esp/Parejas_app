@@ -3,6 +3,7 @@ name: Build Android APK
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -21,11 +22,12 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Clean local generated files
+      - name: Clean generated files
         run: |
-          rm -rf .flutter-plugins .flutter-plugins-dependencies .dart_tool build
+          rm -f .flutter-plugins .flutter-plugins-dependencies
+          rm -rf .dart_tool build
           flutter clean
           flutter pub get
 
-      - name: Build APK
-        run: flutter build apk --debug
+      - name: Build APK with Gradle Stacktrace
+        run: flutter build apk --debug -- --stacktrace
