@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'models/user_account.dart';
 import 'models/progression_model.dart';
 import 'models/match_history_model.dart';
@@ -7,7 +8,13 @@ import 'screens/pairing_screen.dart';
 import 'screens/couple_setup_screen.dart';
 import 'screens/home_menu_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await Firebase.initializeApp();
+  } catch (e) {
+    debugPrint("Firebase init error: $e");
+  }
   runApp(const ParejasApp());
 }
 
@@ -18,6 +25,7 @@ class ParejasApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Parejas App',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.pink,
         useMaterial3: true,
@@ -41,6 +49,7 @@ class _MainNavigationHubState extends State<MainNavigationHub> {
   UserAccount? _currentUser;
   UserAccount? _partnerUser;
 
+  // Forzar estadísticas iniciales en cero
   final ProgressionModel _progression = ProgressionModel(level: 1, currentXp: 0, streakDays: 0);
   final MatchHistoryModel _matchHistory = MatchHistoryModel(user1Wins: 0, user2Wins: 0);
 
@@ -96,9 +105,9 @@ class _MainNavigationHubState extends State<MainNavigationHub> {
 
       case AppStep.coupleSetup:
         if (!_isPairedSuccessfully) {
-          return Scaffold(
+          return const Scaffold(
             body: Center(
-              child: Text('Debes vincular tu cuenta con la de tu pareja para continuar.'),
+              child: Text('Debes vincular tu cuenta con la de tu pareja en tiempo real para continuar.'),
             ),
           );
         }
@@ -116,7 +125,7 @@ class _MainNavigationHubState extends State<MainNavigationHub> {
         if (!_isPairedSuccessfully) {
           return const Scaffold(
             body: Center(
-              child: Text('Acceso denegado: No existe una vinculación activa de pareja.'),
+              child: Text('Acceso denegado: No existe una vinculación activa entre ambos dispositivos.'),
             ),
           );
         }

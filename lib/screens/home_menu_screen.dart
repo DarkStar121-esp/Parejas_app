@@ -3,6 +3,8 @@ import '../models/user_account.dart';
 import '../models/progression_model.dart';
 import '../models/match_history_model.dart';
 import 'profile_screen.dart';
+import 'uno_game_screen.dart';
+import 'words_game_screen.dart';
 
 class HomeMenuScreen extends StatelessWidget {
   final UserAccount user;
@@ -22,7 +24,7 @@ class HomeMenuScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Parejas App - Menú de Juegos'),
+        title: const Text('Parejas App - Menú Principal'),
         actions: [
           IconButton(
             icon: const Icon(Icons.person, color: Colors.pink),
@@ -85,7 +87,7 @@ class HomeMenuScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            const Text('Seleccioná un Juego:', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const Text('Seleccioná un Juego Multiplayer:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             Expanded(
               child: GridView.count(
@@ -93,10 +95,22 @@ class HomeMenuScreen extends StatelessWidget {
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
                 children: [
-                  _buildGameCard(context, 'UNO Parejas', Icons.style, Colors.red),
-                  _buildGameCard(context, 'En Palabras', Icons.font_download, Colors.blue),
-                  _buildGameCard(context, 'Verdad o Reto', Icons.psychology, Colors.purple),
-                  _buildGameCard(context, 'Desafío 1v1', Icons.sports_esports, Colors.orange),
+                  _buildGameCard(context, 'UNO Parejas', Icons.style, Colors.red, () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => UnoGameScreen(user: user, partner: partner),
+                      ),
+                    );
+                  }),
+                  _buildGameCard(context, 'En Palabras', Icons.font_download, Colors.blue, () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => WordsGameScreen(user: user, partner: partner),
+                      ),
+                    );
+                  }),
                 ],
               ),
             ),
@@ -106,15 +120,11 @@ class HomeMenuScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildGameCard(BuildContext context, String title, IconData icon, Color color) {
+  Widget _buildGameCard(BuildContext context, String title, IconData icon, Color color, VoidCallback onTap) {
     return Card(
       elevation: 4,
       child: InkWell(
-        onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Abriendo $title...')),
-          );
-        },
+        onTap: onTap,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
