@@ -28,8 +28,11 @@ jobs:
           flutter create --org com.example --platforms=android .
           flutter pub get
 
-      - name: Analyze Dart Code Detailed
-        run: flutter analyze --no-fatal-warnings --no-fatal-infos || true
+      - name: Build APK
+        run: flutter build apk --debug --no-tree-shake-icons
 
-      - name: Build APK Verbose
-        run: flutter build apk --debug --no-tree-shake-icons --verbose
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: build/app/outputs/flutter-apk/app-debug.apk
