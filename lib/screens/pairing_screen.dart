@@ -5,8 +5,13 @@ import 'pairing_dialog.dart';
 
 class PairingScreen extends StatefulWidget {
   final UserAccount currentUser;
+  final VoidCallback onPairingComplete;
 
-  const PairingScreen({super.key, required this.currentUser});
+  const PairingScreen({
+    super.key,
+    required this.currentUser,
+    required this.onPairingComplete,
+  });
 
   @override
   State<PairingScreen> createState() => _PairingScreenState();
@@ -32,12 +37,17 @@ class _PairingScreenState extends State<PairingScreen> {
   }
 
   void _searchAndPair(String code) async {
+    if (code.isEmpty) return;
     setState(() => _isSearching = true);
     final partner = await PairingService.findUserByCode(code);
     setState(() => _isSearching = false);
 
     if (partner != null && mounted) {
       _showConfirmationDialog(partner);
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Código no encontrado o invalido.')),
+      );
     }
   }
 
@@ -51,9 +61,7 @@ class _PairingScreenState extends State<PairingScreen> {
         onCancel: () => Navigator.pop(ctx),
         onConfirm: () {
           Navigator.pop(ctx);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('¡Emparejados con éxito con ${partner.firstName}!')),
-          );
+          widget.onPairingComplete(); // AVANZA AL PASO DE CONFIGURACION DE PAREJA
         },
       ),
     );
@@ -97,7 +105,7 @@ class _PairingScreenState extends State<PairingScreen> {
                 const SizedBox(width: 8),
                 ElevatedButton(
                   onPressed: _isSearching ? null : () => _searchAndPair(_codeController.text.trim()),
-                  child: _isSearching ? const CircularProgressIndicator() : const Text('Conectar'),
+                  child: _isSearching ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Conectar'),
                 ),
               ],
             ),

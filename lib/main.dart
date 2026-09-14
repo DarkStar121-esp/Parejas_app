@@ -54,6 +54,11 @@ class _MainNavigationHubState extends State<MainNavigationHub> {
       case AppStep.pairing:
         return PairingScreen(
           currentUser: _currentUser!,
+          onPairingComplete: () {
+            setState(() {
+              _currentStep = AppStep.coupleSetup;
+            });
+          },
         );
 
       case AppStep.coupleSetup:
