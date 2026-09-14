@@ -3,6 +3,7 @@ import 'models/user_account.dart';
 import 'screens/register_screen.dart';
 import 'screens/pairing_screen.dart';
 import 'screens/couple_setup_screen.dart';
+import 'screens/home_menu_screen.dart';
 
 void main() {
   runApp(const ParejasApp());
@@ -19,7 +20,6 @@ class ParejasApp extends StatelessWidget {
         primarySwatch: Colors.pink,
         useMaterial3: true,
       ),
-      // Inicia directamente en el formulario de Registro (Paso 1)
       home: const MainNavigationHub(),
     );
   }
@@ -32,23 +32,38 @@ class MainNavigationHub extends StatefulWidget {
   State<MainNavigationHub> createState() => _MainNavigationHubState();
 }
 
+enum AppStep { register, pairing, coupleSetup, home }
+
 class _MainNavigationHubState extends State<MainNavigationHub> {
-  // Simulador de estado para probar los flujos creados
-  UserAccount? currentUser;
+  AppStep _currentStep = AppStep.register;
+  UserAccount? _currentUser;
 
   @override
   Widget build(BuildContext context) {
-    if (currentUser == null) {
-      return const RegisterScreen();
-    }
+    switch (_currentStep) {
+      case AppStep.register:
+        return RegisterScreen(
+          onAccountCreated: (user) {
+            setState(() {
+              _currentUser = user;
+              _currentStep = AppStep.pairing;
+            });
+          },
+        );
 
-    if (currentUser?.coupleId == null) {
-      return PairingScreen(currentUser: currentUser!);
-    }
+      case AppStep.pairing:
+        return PairingScreen(
+          currentUser: _currentUser!,
+        );
 
-    return const CoupleSetupScreen(
-      user1Id: 'user_1',
-      user2Id: 'user_2',
-    );
+      case AppStep.coupleSetup:
+        return CoupleSetupScreen(
+          user1Id: _currentUser?.uid ?? '1',
+          user2Id: 'partner_id',
+        );
+
+      case AppStep.home:
+        return const HomeMenuScreen();
+    }
   }
 }
