@@ -41,7 +41,6 @@ class _MainNavigationHubState extends State<MainNavigationHub> {
   UserAccount? _currentUser;
   UserAccount? _partnerUser;
 
-  // Estadísticas inicializadas estrictamente EN CERO
   final ProgressionModel _progression = ProgressionModel(level: 1, currentXp: 0, streakDays: 0);
   final MatchHistoryModel _matchHistory = MatchHistoryModel(user1Wins: 0, user2Wins: 0);
 
