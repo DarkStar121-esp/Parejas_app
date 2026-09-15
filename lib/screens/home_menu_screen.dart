@@ -28,7 +28,6 @@ class HomeMenuScreen extends StatefulWidget {
 }
 
 class _HomeMenuScreenState extends State<HomeMenuScreen> {
-  // Inicialización segura de Firestore con verificación de apps
   FirebaseFirestore get _firestore {
     if (Firebase.apps.isEmpty) {
       Firebase.initializeApp();
@@ -108,7 +107,10 @@ class _HomeMenuScreenState extends State<HomeMenuScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ProfileScreen(user: widget.user),
+                  builder: (context) => ProfileScreen(
+                    user: widget.user,
+                    partner: widget.partner,
+                  ),
                 ),
               );
             },
