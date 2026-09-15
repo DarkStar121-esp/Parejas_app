@@ -1,3 +1,4 @@
+import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'models/user_account.dart';
@@ -12,7 +13,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
     if (Firebase.apps.isEmpty) {
-      await Firebase.initializeApp();
+      await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
     }
   } catch (e) {
     debugPrint("CRITICAL FIREBASE ERROR: $e");
@@ -148,7 +149,7 @@ class FirebaseInitHandler extends StatefulWidget {
 }
 
 class _FirebaseInitHandlerState extends State<FirebaseInitHandler> {
-  final Future<FirebaseApp> _initialization = Firebase.initializeApp();
+  final Future<FirebaseApp> _initialization = Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   @override
   Widget build(BuildContext context) {
