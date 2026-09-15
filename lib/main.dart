@@ -13,7 +13,7 @@ void main() async {
   try {
     await Firebase.initializeApp();
   } catch (e) {
-    debugPrint("Firebase init error: $e");
+    debugPrint("CRITICAL FIREBASE ERROR: $e");
   }
   runApp(const ParejasApp());
 }
@@ -49,9 +49,8 @@ class _MainNavigationHubState extends State<MainNavigationHub> {
   UserAccount? _currentUser;
   UserAccount? _partnerUser;
 
-  // Forzar estadísticas iniciales en cero
   final ProgressionModel _progression = ProgressionModel(level: 1, currentXp: 0, streakDays: 0);
-  final MatchHistoryModel _matchHistory = MatchHistoryModel(user1Wins: 0, user2Wins: 0);
+  final MatchHistoryModel _matchHistory = MatchHistoryModel(userWins: 0, partnerWins: 0);
 
   bool get _isPairedSuccessfully => _currentUser != null && _partnerUser != null;
 
@@ -112,8 +111,8 @@ class _MainNavigationHubState extends State<MainNavigationHub> {
           );
         }
         return CoupleSetupScreen(
-          user1Id: _currentUser!.uid,
-          user2Id: _partnerUser!.uid,
+          userId: _currentUser!.uid,
+          partnerId: _partnerUser!.uid,
           onSetupComplete: () {
             setState(() {
               _currentStep = AppStep.home;
