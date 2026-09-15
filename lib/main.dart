@@ -52,7 +52,7 @@ class _MainNavigationHubState extends State<MainNavigationHub> {
   UserAccount? _partnerUser;
 
   final ProgressionModel _progression = ProgressionModel(level: 1, currentXp: 0, streakDays: 0);
-  final MatchHistoryModel _matchHistory = MatchHistoryModel(userWins: 0, partnerWins: 0);
+  final MatchHistoryModel _matchHistory = MatchHistoryModel(userWins: 0, partnerWins: 0, draws: 0);
 
   bool get _isPairedSuccessfully => _currentUser != null && _partnerUser != null;
 
@@ -113,8 +113,8 @@ class _MainNavigationHubState extends State<MainNavigationHub> {
           );
         }
         return CoupleSetupScreen(
-          userId: _currentUser!.uid,
-          partnerId: _partnerUser!.uid,
+          userId1: _currentUser!.uid,
+          userId2: _partnerUser!.uid,
           onSetupComplete: () {
             setState(() {
               _currentStep = AppStep.home;
