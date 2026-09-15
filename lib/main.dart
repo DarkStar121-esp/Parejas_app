@@ -113,8 +113,8 @@ class _MainNavigationHubState extends State<MainNavigationHub> {
           );
         }
         return CoupleSetupScreen(
-          userId1: _currentUser!.uid,
-          userId2: _partnerUser!.uid,
+          user1Id: _currentUser!.uid,
+          user2Id: _partnerUser!.uid,
           onSetupComplete: () {
             setState(() {
               _currentStep = AppStep.home;
