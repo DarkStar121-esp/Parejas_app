@@ -22,7 +22,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Future<void> _signUpWithGoogle() async {
     setState(() => _isLoading = true);
     try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      final GoogleSignInAccount? googleUser = await GoogleSignIn(serverClientId: '860001616686-1hbq5a787kid8igqeqb117mbmgv10k1h.apps.googleusercontent.com').signIn();
       if (googleUser == null) {
         setState(() => _isLoading = false);
         return;
