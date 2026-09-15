@@ -110,6 +110,8 @@ class _HomeMenuScreenState extends State<HomeMenuScreen> {
                   builder: (context) => ProfileScreen(
                     user: widget.user,
                     partner: widget.partner,
+                    progression: widget.progression,
+                    matchHistory: widget.matchHistory,
                   ),
                 ),
               );
