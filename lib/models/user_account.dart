@@ -31,6 +31,9 @@ class UserAccount {
     this.equippedBanner = 'white',
   }) : unlockedAvatars = unlockedAvatars ?? ['default_silhouette'];
 
+  // Getter agregado para solucionar el error de compilación
+  String get displayName => '$firstName $lastName';
+
   // Validación de edad mínima (18 años)
   static bool isAdult(int age) => age >= 18;
 
