@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "860001616686-oprrjbrbagik5ul6pvo9s251rcgcholf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.parejas_app",
+            "certificate_hash": "4a69d91e10a190597eb6ba6665c7c70f7dedfcab"
+          }
+        },
+        {
           "client_id": "860001616686-1hbq5a787kid8igqeqb117mbmgv10k1h.apps.googleusercontent.com",
           "client_type": 3
         }
