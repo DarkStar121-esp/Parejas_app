@@ -11,7 +11,9 @@ import 'screens/home_menu_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
-    await Firebase.initializeApp();
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp();
+    }
   } catch (e) {
     debugPrint("CRITICAL FIREBASE ERROR: $e");
   }
