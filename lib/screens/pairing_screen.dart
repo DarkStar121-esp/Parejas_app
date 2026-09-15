@@ -68,7 +68,7 @@ class _PairingScreenState extends State<PairingScreen> {
 
       final coupleId = coupleDocRef.id;
 
-      # 3. Actualizar el coupleId en Firestore para ambos usuarios
+      // 3. Actualizar el coupleId en Firestore para ambos usuarios
       await firestore.collection('users').doc(widget.currentUser.uid).update({'coupleId': coupleId});
       await firestore.collection('users').doc(partnerUid).update({'coupleId': coupleId});
 
