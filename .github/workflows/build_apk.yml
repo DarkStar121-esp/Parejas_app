@@ -18,14 +18,14 @@ jobs:
         distribution: 'zulu'
         java-version: '17'
 
-    - name: Set up Flutter
+    - name: Install Flutter SDK manually
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: '3.19.0'
+        flutter-version: '3.19.6'
         channel: 'stable'
 
-    - name: Clean project
-      run: flutter clean
+    - name: Verify Flutter Version
+      run: flutter --version
 
     - name: Install dependencies
       run: flutter pub get
