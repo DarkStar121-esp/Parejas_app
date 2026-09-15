@@ -52,7 +52,7 @@ class _MainNavigationHubState extends State<MainNavigationHub> {
   UserAccount? _partnerUser;
 
   final ProgressionModel _progression = ProgressionModel(level: 1, currentXp: 0, streakDays: 0);
-  final MatchHistoryModel _matchHistory = MatchHistoryModel(userWins: 0, partnerWins: 0, draws: 0);
+  final MatchHistoryModel _matchHistory = MatchHistoryModel(user1Wins: 0, user2Wins: 0);
 
   bool get _isPairedSuccessfully => _currentUser != null && _partnerUser != null;
 
