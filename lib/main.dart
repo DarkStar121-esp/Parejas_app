@@ -1,6 +1,8 @@
-import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'firebase_options.dart';
 import 'models/user_account.dart';
 import 'models/progression_model.dart';
 import 'models/match_history_model.dart';
@@ -11,13 +13,9 @@ import 'screens/home_menu_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  try {
-    if (Firebase.apps.isEmpty) {
-      await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-    }
-  } catch (e) {
-    debugPrint("CRITICAL FIREBASE ERROR: $e");
-  }
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const ParejasApp());
 }
 
@@ -30,10 +28,10 @@ class ParejasApp extends StatelessWidget {
       title: 'Parejas App',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.pink,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.pink),
         useMaterial3: true,
       ),
-      home: const FirebaseInitHandler(),
+      home: const MainNavigationHub(),
     );
   }
 }
@@ -51,11 +49,88 @@ class _MainNavigationHubState extends State<MainNavigationHub> {
   AppStep _currentStep = AppStep.register;
   UserAccount? _currentUser;
   UserAccount? _partnerUser;
+  bool _isLoadingSession = true;
 
   final ProgressionModel _progression = ProgressionModel(level: 1, currentXp: 0, streakDays: 0);
   final MatchHistoryModel _matchHistory = MatchHistoryModel(user1Wins: 0, user2Wins: 0);
 
   bool get _isPairedSuccessfully => _currentUser != null && _partnerUser != null;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkExistingSession();
+  }
+
+  Future<void> _checkExistingSession() async {
+    final fbUser = FirebaseAuth.instance.currentUser;
+    if (fbUser != null) {
+      try {
+        final userDoc = await FirebaseFirestore.instance.collection('users').doc(fbUser.uid).get();
+        if (userDoc.exists && userDoc.data() != null) {
+          final data = userDoc.data()!;
+          final userAcc = UserAccount(
+            uid: fbUser.uid,
+            firstName: data['firstName'] ?? 'Usuario',
+            lastName: data['lastName'] ?? '',
+            age: data['age'] ?? 20,
+            gender: (data['gender'] == 'female') ? Gender.female : Gender.male,
+            pairingCode: data['pairingCode'] ?? UserAccount.generatePairingCode(),
+            coupleId: data['coupleId'],
+          );
+
+          _currentUser = userAcc;
+
+          if (userAcc.coupleId != null && userAcc.coupleId!.isNotEmpty) {
+            final coupleDoc = await FirebaseFirestore.instance
+                .collection('couples')
+                .doc(userAcc.coupleId)
+                .get();
+
+            if (coupleDoc.exists && coupleDoc.data() != null) {
+              final coupleData = coupleDoc.data()!;
+              final List<dynamic> users = coupleData['users'] ?? [];
+              final partnerId = users.firstWhere((id) => id != userAcc.uid, orElse: () => null);
+
+              if (partnerId != null) {
+                final partnerDoc = await FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(partnerId)
+                    .get();
+
+                if (partnerDoc.exists && partnerDoc.data() != null) {
+                  final pData = partnerDoc.data()!;
+                  _partnerUser = UserAccount(
+                    uid: partnerId,
+                    firstName: pData['firstName'] ?? 'Pareja',
+                    lastName: pData['lastName'] ?? '',
+                    age: pData['age'] ?? 20,
+                    gender: (pData['gender'] == 'female') ? Gender.female : Gender.male,
+                    pairingCode: pData['pairingCode'] ?? '',
+                    coupleId: userAcc.coupleId,
+                  );
+                  _currentStep = AppStep.home;
+                } else {
+                  _currentStep = AppStep.pairing;
+                }
+              } else {
+                _currentStep = AppStep.pairing;
+              }
+            } else {
+              _currentStep = AppStep.pairing;
+            }
+          } else {
+            _currentStep = AppStep.pairing;
+          }
+        }
+      } catch (e) {
+        debugPrint('Error al verificar sesión existente: $e');
+      }
+    }
+    if (mounted) {
+      setState(() => _isLoadingSession = false);
+    }
+  }
 
   void _onBackPressed() {
     setState(() {
@@ -71,6 +146,21 @@ class _MainNavigationHubState extends State<MainNavigationHub> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoadingSession) {
+      return const Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Cargando sesión...', style: TextStyle(fontSize: 16)),
+            ],
+          ),
+        ),
+      );
+    }
+
     return PopScope(
       canPop: _currentStep == AppStep.register,
       onPopInvoked: (didPop) {
@@ -109,7 +199,7 @@ class _MainNavigationHubState extends State<MainNavigationHub> {
         if (!_isPairedSuccessfully) {
           return const Scaffold(
             body: Center(
-              child: Text('Debes vincular tu cuenta con la de tu pareja en tiempo real para continuar.'),
+              child: Text('Debes vincular tu cuenta con la de tu pareja para continuar.'),
             ),
           );
         }
@@ -138,57 +228,5 @@ class _MainNavigationHubState extends State<MainNavigationHub> {
           matchHistory: _matchHistory,
         );
     }
-  }
-}
-
-class FirebaseInitHandler extends StatefulWidget {
-  const FirebaseInitHandler({super.key});
-
-  @override
-  State<FirebaseInitHandler> createState() => _FirebaseInitHandlerState();
-}
-
-class _FirebaseInitHandlerState extends State<FirebaseInitHandler> {
-  final Future<FirebaseApp> _initialization = Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: _initialization,
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return Scaffold(
-            body: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Text(
-                  'Error al conectar con Firebase:\n${snapshot.error}',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.red),
-                ),
-              ),
-            ),
-          );
-        }
-        if (snapshot.connectionState == ConnectionState.done) {
-          return const MainNavigationHub();
-        }
-        return const Scaffold(
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircularProgressIndicator(color: Colors.pinkAccent),
-                SizedBox(height: 20),
-                Text(
-                  'Cargando Parejas App...',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
   }
 }
